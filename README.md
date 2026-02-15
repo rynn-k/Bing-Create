@@ -242,7 +242,7 @@ curl http://localhost:7860/task/123e4567-e89b-12d3-a456-426614174000
     "status": "processing",
     "prompt": "ocean waves at sunset",
     "video": null,
-    "error: null,
+    "error": null,
     "createdAt": "2024-01-01T00:00:00.000Z",
     "completedAt": null
   },
