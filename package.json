@@ -1,13 +1,23 @@
 {
-  "name": "bing",
+  "name": "Bing-Create",
   "version": "1.0.0",
-  "description": "",
+  "description": "A REST API wrapper for Bing Image Creator — supports DALL-E, GPT-4o, and MAI Image 1 with image & video generation.",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "bing",
+    "bing-image-creator",
+    "image-generator",
+    "dall-e",
+    "rest-api",
+    "nodejs",
+    "wrapper",
+    "ai"
+  ],
+  "author": "rynn-k",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
@@ -15,6 +25,5 @@
     "fetch-cookie": "^2.2.0",
     "node-fetch": "^2.6.1",
     "tough-cookie": "^6.0.0"
-  },
-  "type": "commonjs"
+  }
 }

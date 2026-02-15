@@ -27,8 +27,10 @@ app.get('/', (_req, res) => {
         endpoints: {
             info: 'GET /',
             health: 'GET /health',
-            generate: 'POST /generate',
-            generate_options: 'GET /generate/options'
+            create_image: 'POST /create/image',
+            create_video: 'POST /create/video',
+            get_task: 'GET /task/:taskId',
+            options: 'GET /options'
         },
         timestamp: new Date().toISOString(),
     });
@@ -42,12 +44,13 @@ app.get('/health', (_req, res) => {
             status: 'ok',
             cookie: cookieSet ? 'set' : 'not set',
             session: bing.IG ? 'active' : 'inactive',
+            activeTasks: bing.videoTasks.size,
         },
         timestamp: new Date().toISOString(),
     });
 });
 
-app.get('/generate/options', (_req, res) => {
+app.get('/options', (_req, res) => {
     res.json({
         success: true,
         data: {
@@ -61,14 +64,15 @@ app.get('/generate/options', (_req, res) => {
                 { id: 'LANDSCAPE', value: 2, ratio: '7:4' },
                 { id: 'PORTRAIT',  value: 3, ratio: '4:7' },
             ],
-            types: ['image', 'video'],
         },
         timestamp: new Date().toISOString(),
     });
 });
 
-app.post('/generate', async (req, res) => {
-    const { query, model, aspect, type } = req.body;
+// ─── Create Image ──────────────────────────────────────────────────────────────
+
+app.post('/create/image', async (req, res) => {
+    const { query, model, aspect } = req.body;
     
     if (!query || typeof query !== 'string') {
         return res.status(400).json({
@@ -80,47 +84,119 @@ app.post('/generate', async (req, res) => {
     }
     
     try {
-        const result = await bing.create(query, { model, aspect, type });
+        const result = await bing.createImage(query, { model, aspect });
         return res.json({
             success: true,
             data: result,
             timestamp: new Date().toISOString(),
         });
     } catch (err) {
-        if (err instanceof AuthCookieError) {
-            bing.IG = null;
-            return res.status(401).json({
-                error: {
-                    message: err.message,
-                    type: 'auth_error',
-                },
-            });
-        }
-        if (err instanceof PromptRejectedError) {
-            return res.status(422).json({
-                error: {
-                    message: err.message,
-                    type: 'prompt_rejected_error',
-                },
-            });
-        }
-        if (err.message.startsWith('Invalid model') || err.message.startsWith('Invalid aspect')) {
-            return res.status(400).json({
-                error: {
-                    message: err.message,
-                    type: 'invalid_request_error',
-                },
-            });
-        }
-        console.error('[/generate Error]', err);
-        return res.status(500).json({
+        return handleError(err, res);
+    }
+});
+
+// ─── Create Video ──────────────────────────────────────────────────────────────
+
+app.post('/create/video', async (req, res) => {
+    const { query } = req.body;
+    
+    if (!query || typeof query !== 'string') {
+        return res.status(400).json({
             error: {
-                message: err.message,
-                type: 'api_error',
+                message: 'query is required and must be a string.',
+                type: 'invalid_request_error',
             },
         });
     }
+    
+    try {
+        const result = await bing.createVideo(query);
+        return res.json({
+            success: true,
+            data: result,
+            timestamp: new Date().toISOString(),
+        });
+    } catch (err) {
+        return handleError(err, res);
+    }
 });
+
+// ─── Get Task Status ───────────────────────────────────────────────────────────
+
+app.get('/task/:taskId', (req, res) => {
+    const { taskId } = req.params;
+    const task = bing.getVideoTask(taskId);
+    
+    if (!task) {
+        return res.status(404).json({
+            error: {
+                message: 'Task not found.',
+                type: 'invalid_request_error',
+            },
+        });
+    }
+    
+    const response = {
+        success: true,
+        data: {
+            id: task.id,
+            status: task.status,
+            prompt: task.query,
+            video: null,
+            error: null,
+            createdAt: task.createdAt,
+            completedAt: null
+        },
+        timestamp: new Date().toISOString(),
+    };
+    
+    if (task.status === 'completed') {
+        response.data.video = task.video;
+        response.data.completedAt = task.completedAt;
+    } else if (task.status === 'failed') {
+        response.data.error = task.error;
+        response.data.completedAt = task.completedAt;
+    }
+    
+    return res.json(response);
+});
+
+// ─── Helper Functions ──────────────────────────────────────────────────────────
+
+function handleError(err, res) {
+    if (err instanceof AuthCookieError) {
+        bing.IG = null;
+        return res.status(401).json({
+            error: {
+                message: err.message,
+                type: 'auth_error',
+            },
+        });
+    }
+    if (err instanceof PromptRejectedError) {
+        return res.status(422).json({
+            error: {
+                message: err.message,
+                type: 'prompt_rejected_error',
+            },
+        });
+    }
+    if (err.message.startsWith('Invalid model') || err.message.startsWith('Invalid aspect')) {
+        return res.status(400).json({
+            error: {
+                message: err.message,
+                type: 'invalid_request_error',
+            },
+        });
+    }
+    console.error('[Error]', err);
+    return res.status(500).json({
+        error: {
+            message: err.message,
+            type: 'api_error',
+        },
+    });
+}
 
 // ─── Fallback ──────────────────────────────────────────────────────────────────
 
@@ -150,7 +226,7 @@ async function startServer() {
     
     if (!cookieSet) {
         console.warn('[BingCreate] WARNING: COOKIE_U is not set in bing.js.');
-        console.warn('[BingCreate] Please fill in BingCreate.COOKIE_U before using /generate.');
+        console.warn('[BingCreate] Please fill in BingCreate.COOKIE_U before using the API.');
     } else {
         try {
             await bing.setup();
