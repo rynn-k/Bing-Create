@@ -1,4 +1,4 @@
-![Banner](https://files.catbox.moe/mg9d50.png)
+![Banner](https://nc-cdn.oss-accelerate.aliyuncs.com/nx/4622c0b17cff.png)
 
 # Bing Create
 
