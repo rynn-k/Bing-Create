@@ -185,4 +185,4 @@ curl -X POST http://localhost:7860/generate \
 
 ## License
 
-MIT
+[MIT](LICENSE)
