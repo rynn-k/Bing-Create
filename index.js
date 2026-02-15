@@ -23,7 +23,7 @@ app.get('/', (_req, res) => {
     res.json({
         success: true,
         author: 'rynn-k (Randyyyyy)',
-        repository: 'https://github.com/rynn-k/bing-create-api',
+        repository: 'https://github.com/rynn-k/Bing-Create',
         endpoints: {
             info: 'GET /',
             health: 'GET /health',
