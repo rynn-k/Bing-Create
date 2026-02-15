@@ -1,3 +1,5 @@
+![Banner](https://files.catbox.moe/bhfnz1.png)
+
 # Bing Create
 
 A REST API wrapper for Bing Image Creator (DALL-E, GPT-4o, MAI Image 1) built with Node.js + Express.
