@@ -1,4 +1,4 @@
-![Banner](https://files.catbox.moe/bhfnz1.png)
+![Banner](https://files.catbox.moe/mg9d50.png)
 
 # Bing Create
 
