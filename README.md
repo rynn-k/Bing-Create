@@ -1,4 +1,4 @@
-![Banner](https://nc-cdn.oss-accelerate.aliyuncs.com/nx/4622c0b17cff.png)
+![Banner](https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/0e227075-061b-43fa-b141-3ee1fc4c6fc2/59d77dbb59b1.png)
 
 # Bing Create
 
